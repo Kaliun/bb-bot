@@ -56,8 +56,8 @@ is_mounted() {
 }
 
 mount_() {
-    ( /sbin/mount $* || toolbox mount $* ||
-    toybox mount $* || return 1 ) 2>/dev/null
+    /sbin/mount $* || toolbox mount $* ||
+    toybox mount $* || return 1
 }
 
 mount_systemless () {
@@ -78,7 +78,7 @@ mount_systemless () {
             losetup $LOOPDEVICE $1
             if [ "$?" -eq "0" ]
                 then
-                mount_ -t ext4 -o loop $LOOPDEVICE $2
+                mount_ -t ext4 -o loop $LOOPDEVICE $2 2>/dev/null
             fi
             if (is_mounted $2)
                 then
@@ -146,13 +146,13 @@ ui_print_ "Mounting /system --"
 
 if (is_mounted /system)
     then
-    mount_ -o rw,remount -t auto /system
+    mount_ -o rw,remount -t auto /system 2>/dev/null
     error "Error while mounting /system"
     _mounted="yes"
 else
-    mount_ -o rw -t auto /system
-    error "Error while mounting /system"
-    _mounted="no"
+    mount_ -o rw -t auto /system 2>/dev/null
+    erro"Error while mounting /system"
+   
 fi
 
 ui_print_ "Checking Architecture --"
@@ -264,8 +264,7 @@ SUIMG=$(
 if [ ! -z "$SUIMG" ]
     then
     SULOOPDEV=$(mount_systemless $SUIMG "/su")
-    ui_print_ "Systemless root detected --"
-fi
+    ui_print_ "Systeess root d
 
 if [ -f /data/magisk.img ]
     then
@@ -482,8 +481,9 @@ if $MAGISKINSTALL
     fi
 
     $BOOTMODE || recovery_cleanup
+else
+    umount /system
 fi
-umount /system
 rm -rf $INSTALLER 2>/dev/null
 ui_print_ "  "
 ui_print_ "All DONE! -- Check $LOGFILE for more info"
